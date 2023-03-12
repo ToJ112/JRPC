@@ -6,7 +6,7 @@ import top.jtning.rpc.client.RpcClientProxy;
 
 public class TestClient {
     public static void main(String[] args) {
-        RpcClientProxy proxy = new RpcClientProxy("127.0.0.1", 54111);
+        RpcClientProxy proxy = new RpcClientProxy("127.0.0.1", 9000);
         HelloService helloService = proxy.getProxy(HelloService.class);
         HelloObject helloObject = new HelloObject(12, "THIS IS A MESSAGE");
         String res = helloService.hello(helloObject);

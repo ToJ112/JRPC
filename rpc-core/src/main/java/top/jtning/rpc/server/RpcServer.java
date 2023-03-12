@@ -26,13 +26,11 @@ public class RpcServer {
             logger.info("Server is starting up...");
             while (true) {
                 Socket socket = serverSocket.accept();
-                logger.info("Client connected! IP address is: " + socket.getInetAddress());
-                threadPool.execute(new WorkerThread(socket, service));
+                logger.info("Client connected! IP address is: " + socket.getInetAddress() + " : " + socket.getPort());
+                threadPool.execute(new RequestHandler(socket, service));
             }
         } catch (IOException e) {
             logger.error("An error occurred while establishing a connection: ", e);
-        } catch (Exception e) {
-            logger.error("An error occurred for: ", e);
         }
     }
 }

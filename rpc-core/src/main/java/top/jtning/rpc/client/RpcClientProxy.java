@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import top.jtning.rpc.entity.RpcRequest;
-import top.jtning.rpc.entity.RpcResponse;
 
 public class RpcClientProxy implements InvocationHandler {
     private String host;

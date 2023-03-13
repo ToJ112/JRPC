@@ -47,7 +47,7 @@ public class JsonSerializer implements CommonSerializer {
         for (int i = 0; i < rpcRequest.getParameters().length; i++) {
             Class<?> clazz = rpcRequest.getParameters()[i].getClass();
 //            if (!clazz.isAssignableFrom(rpcRequest.getParamTypes()[i].getClass())) {
-            if (!clazz.isAssignableFrom(rpcRequest.getParamTypes()[i])) {
+            if (!clazz.isAssignableFrom(rpcRequest.getParamTypes()[i].getClass())) {
                 byte[] bytes = objectMapper.writeValueAsBytes(rpcRequest.getParameters()[i]);
                 rpcRequest.getParameters()[i] = objectMapper.readValue(bytes, clazz);
             }

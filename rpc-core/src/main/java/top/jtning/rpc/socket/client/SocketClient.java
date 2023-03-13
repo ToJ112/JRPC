@@ -14,9 +14,13 @@ import java.net.Socket;
 
 public class SocketClient implements RpcClient {
     public static final Logger logger = LoggerFactory.getLogger(SocketClient.class);
-
-
-    public Object sendRequest(RpcRequest rpcRequest, String host, int port) {
+    private final String host;
+    private final int port;
+    public SocketClient(String host,int port) {
+        this.host = host;
+        this.port = port;
+    }
+    public Object sendRequest(RpcRequest rpcRequest) {
         // 输入参数校验
         if (rpcRequest == null || host == null || host.isEmpty()) {
             throw new IllegalArgumentException("Invalid input parameters.");

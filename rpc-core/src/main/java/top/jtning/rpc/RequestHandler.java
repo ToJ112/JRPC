@@ -30,6 +30,6 @@ public class RequestHandler {
         } catch (NoSuchMethodException e) {
             return RpcResponse.fail(ResponseCode.METHOD_NOT_FOUND);
         }
-        return method.invoke(service,rpcRequest.getParameters());
+        return method.invoke(service, rpcRequest.getParameters());
     }
 }

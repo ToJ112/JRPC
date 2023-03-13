@@ -1,9 +1,10 @@
-package top.jtning.rpc.client;
+package top.jtning.rpc;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import top.jtning.rpc.entity.RpcRequest;
+import top.jtning.rpc.socket.client.SocketClient;
 
 public class RpcClientProxy implements InvocationHandler {
     private String host;
@@ -27,7 +28,7 @@ public class RpcClientProxy implements InvocationHandler {
                 .parameters(args)
                 .paramTypes(method.getParameterTypes())
                 .build();
-        RpcClient rpcClient = new RpcClient();
-        return rpcClient.sendRequest(rpcRequest,host,port);
+        SocketClient socketClient = new SocketClient();
+        return socketClient.sendRequest(rpcRequest,host,port);
     }
 }

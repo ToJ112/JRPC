@@ -1,4 +1,4 @@
-package top.jtning.rpc.server;
+package top.jtning.rpc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

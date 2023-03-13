@@ -2,7 +2,7 @@ package top.jtning.test;
 
 import top.jtning.rpc.api.HelloObject;
 import top.jtning.rpc.api.HelloService;
-import top.jtning.rpc.client.RpcClientProxy;
+import top.jtning.rpc.RpcClientProxy;
 
 public class TestClient {
     public static void main(String[] args) {

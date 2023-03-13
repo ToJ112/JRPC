@@ -3,14 +3,14 @@ package top.jtning.test;
 import top.jtning.rpc.api.HelloService;
 import top.jtning.rpc.registry.DefaultServiceRegistry;
 import top.jtning.rpc.registry.ServiceRegistry;
-import top.jtning.rpc.server.RpcServer;
+import top.jtning.rpc.socket.server.SocketServer;
 
 public class TestServer {
     public static void main(String[] args) {
         HelloService helloService = new HelloServiceImpl();
         ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
         serviceRegistry.register(helloService);
-        RpcServer rpcServer = new RpcServer(serviceRegistry);
-        rpcServer.start(9000);
+        SocketServer socketServer = new SocketServer(serviceRegistry);
+        socketServer.start(9000);
     }
 }

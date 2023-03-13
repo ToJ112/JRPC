@@ -1,7 +1,8 @@
-package top.jtning.rpc.client;
+package top.jtning.rpc.socket.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.jtning.rpc.RpcClient;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.entity.RpcResponse;
 import top.jtning.rpc.enumeration.ResponseCode;
@@ -11,8 +12,8 @@ import top.jtning.rpc.exception.RpcException;
 import java.io.*;
 import java.net.Socket;
 
-public class RpcClient {
-    public static final Logger logger = LoggerFactory.getLogger(RpcClient.class);
+public class SocketClient implements RpcClient {
+    public static final Logger logger = LoggerFactory.getLogger(SocketClient.class);
 
 
     public Object sendRequest(RpcRequest rpcRequest, String host, int port) {

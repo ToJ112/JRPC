@@ -2,11 +2,11 @@ package top.jtning.test;
 
 import top.jtning.rpc.api.HelloObject;
 import top.jtning.rpc.api.HelloService;
-import top.jtning.rpc.RpcClientProxy;
+import top.jtning.rpc.transport.RpcClientProxy;
 import top.jtning.rpc.serializer.HessianSerializer;
-import top.jtning.rpc.socket.client.SocketClient;
+import top.jtning.rpc.transport.socket.client.SocketClient;
 
-public class TestClient {
+public class SocketTestClient {
     public static void main(String[] args) {
         SocketClient client = new SocketClient("127.0.0.1",9000);
         client.setSerializer(new HessianSerializer());

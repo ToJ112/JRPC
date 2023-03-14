@@ -16,7 +16,7 @@ public class ProtobufSerializer implements CommonSerializer {
     LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
     //缓存Schema, Schema制定序列化逻辑
     Map<Class<?>, Schema<?>> schemaCache = new HashMap<>();
-
+    @SuppressWarnings("unchecked")
     @Override
     public byte[] serialize(Object obj) {
         Class<?> clazz = obj.getClass();
@@ -29,7 +29,7 @@ public class ProtobufSerializer implements CommonSerializer {
         }
         return data;
     }
-
+    @SuppressWarnings("unchecked")
     @Override
     public Object deserialize(byte[] bytes, Class<?> clazz) {
         Schema schema = getSchema(clazz);

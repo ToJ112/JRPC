@@ -1,4 +1,4 @@
-package top.jtning.rpc.netty.client;
+package top.jtning.rpc.transport.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;

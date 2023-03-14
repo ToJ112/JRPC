@@ -1,4 +1,4 @@
-package top.jtning.rpc.socket.util;
+package top.jtning.rpc.transport.socket.util;
 
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.enumeration.PackageType;

@@ -1,10 +1,10 @@
 package top.jtning.test;
 
-import top.jtning.rpc.RpcClient;
-import top.jtning.rpc.RpcClientProxy;
+import top.jtning.rpc.transport.RpcClient;
+import top.jtning.rpc.transport.RpcClientProxy;
 import top.jtning.rpc.api.HelloObject;
 import top.jtning.rpc.api.HelloService;
-import top.jtning.rpc.netty.client.NettyClient;
+import top.jtning.rpc.transport.netty.client.NettyClient;
 import top.jtning.rpc.serializer.ProtobufSerializer;
 
 public class NettyTestClient {

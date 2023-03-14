@@ -1,4 +1,4 @@
-package top.jtning.rpc;
+package top.jtning.rpc.transport;
 
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.serializer.CommonSerializer;

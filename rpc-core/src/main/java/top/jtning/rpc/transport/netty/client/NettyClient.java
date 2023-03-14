@@ -1,16 +1,13 @@
-package top.jtning.rpc.netty.client;
+package top.jtning.rpc.transport.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jtning.rpc.RpcClient;
-import top.jtning.rpc.codec.CommonDecoder;
-import top.jtning.rpc.codec.CommonEncoder;
+import top.jtning.rpc.transport.RpcClient;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.entity.RpcResponse;
 import top.jtning.rpc.enumeration.RpcError;

@@ -1,4 +1,4 @@
-package top.jtning.rpc.netty.server;
+package top.jtning.rpc.transport.netty.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -9,14 +9,12 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jtning.rpc.RpcServer;
+import top.jtning.rpc.transport.RpcServer;
 import top.jtning.rpc.codec.CommonDecoder;
 import top.jtning.rpc.codec.CommonEncoder;
 import top.jtning.rpc.enumeration.RpcError;
 import top.jtning.rpc.exception.RpcException;
 import top.jtning.rpc.serializer.CommonSerializer;
-import top.jtning.rpc.serializer.JsonSerializer;
-import top.jtning.rpc.serializer.KyroSerializer;
 
 public class NettyServer implements RpcServer {
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);

@@ -1,13 +1,14 @@
-package top.jtning.rpc.socket.server;
+package top.jtning.rpc.transport.socket.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jtning.rpc.enumeration.RpcError;
 import top.jtning.rpc.exception.RpcException;
-import top.jtning.rpc.registry.ServiceRegistry;
-import top.jtning.rpc.RequestHandler;
-import top.jtning.rpc.RpcServer;
+import top.jtning.rpc.provider.ServiceProvider;
+import top.jtning.rpc.handler.RequestHandler;
+import top.jtning.rpc.transport.RpcServer;
 import top.jtning.rpc.serializer.CommonSerializer;
+import top.jtning.rpc.util.ThreadPoolFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,20 +19,15 @@ public class SocketServer implements RpcServer {
     private static final Logger logger = LoggerFactory.getLogger(SocketServer.class);
     private final ExecutorService threadPool;
 
-    private static final int CORE_POOL_SIZE = 5;
-    private static final int MAXIMUM_POOL_SIZE = 50;
-    private static final int KEEP_ALIVE_TIME = 60;
-    private static final int BLOCKING_QUEUE_CAPACITY = 100;
+
     private final RequestHandler requestHandler = new RequestHandler();
 
-    private final ServiceRegistry serviceRegistry;
+    private final ServiceProvider serviceProvider;
     private CommonSerializer serializer;
 
-    public SocketServer(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-        // 线程池基本大小为5，最大大小为50，非核心线程空闲时间为60秒，使用有界队列保存任务
-        BlockingQueue<Runnable> workingQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
-        threadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS, workingQueue, Executors.defaultThreadFactory());
+    public SocketServer(ServiceProvider serviceProvider) {
+        this.serviceProvider = serviceProvider;
+        threadPool = ThreadPoolFactory.createDefaultThreadPool("socket-rpc-server");
     }
 
     public void start(int port) {
@@ -44,7 +40,7 @@ public class SocketServer implements RpcServer {
             Socket socket;
             while ((socket = serverSocket.accept()) != null) {
                 logger.info("Consumer connection: {}:{}", socket.getInetAddress(), socket.getPort());
-                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry, serializer));
+                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceProvider, serializer));
             }
             threadPool.shutdown();
         } catch (IOException e) {

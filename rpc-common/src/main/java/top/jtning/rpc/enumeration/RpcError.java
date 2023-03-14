@@ -14,6 +14,9 @@ public enum RpcError {
     UNKNOWN_SERIALIZER("Unrecognized (De)serializer."),
     UNKNOWN_PACKAGE_TYPE("Unrecognized Package Type"),
     SERIALIZER_NOT_FOUND("Cannot Find Serializer"),
-    RESPONSE_NOT_MATCH("Response not match request id");
+    RESPONSE_NOT_MATCH("Response not match request id"),
+    FAILED_TO_CONNECT_TO_SERVICE_REGISTRY("Failed to connect to registry center"),
+    REGISTER_SERVICE_FAILED("Failed to register service");
+
     private final String message;
 }

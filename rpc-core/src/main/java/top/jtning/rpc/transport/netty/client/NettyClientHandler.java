@@ -1,4 +1,4 @@
-package top.jtning.rpc.netty.client;
+package top.jtning.rpc.transport.netty.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

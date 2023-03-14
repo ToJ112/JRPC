@@ -1,4 +1,4 @@
-package top.jtning.rpc.socket.util;
+package top.jtning.rpc.transport.socket.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -12,6 +12,7 @@ import java.util.concurrent.*;
  */
 public class ThreadPoolFactory {
     /**
+     * 线程池基本大小为10，最大大小为10，非核心线程空闲时间为60秒，使用有界队列保存任务
      * 线程池参数
      */
     private static final int CORE_POOL_SIZE = 10;

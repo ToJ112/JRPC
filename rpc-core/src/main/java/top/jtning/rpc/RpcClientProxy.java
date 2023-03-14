@@ -1,17 +1,18 @@
 package top.jtning.rpc;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jtning.rpc.entity.RpcRequest;
-import top.jtning.rpc.socket.client.SocketClient;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.UUID;
 
 public class RpcClientProxy implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(RpcClientProxy.class);
     private final RpcClient client;
+
     public RpcClientProxy(RpcClient client) {
         this.client = client;
     }
@@ -24,7 +25,7 @@ public class RpcClientProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         logger.info("invoke method: {}#{}", method.getDeclaringClass().getName(), method.getName());
-        RpcRequest rpcRequest = new RpcRequest(method.getDeclaringClass().getName(), method.getName(), args, method.getParameterTypes());
+        RpcRequest rpcRequest = new RpcRequest(UUID.randomUUID().toString(), method.getDeclaringClass().getName(), method.getName(), args, method.getParameterTypes());
         return client.sendRequest(rpcRequest);
     }
 }

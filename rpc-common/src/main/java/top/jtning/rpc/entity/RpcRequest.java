@@ -1,7 +1,6 @@
 package top.jtning.rpc.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RpcRequest implements Serializable {
-
+    private String requestId;
     /**
      * Interface name to be called.
      */

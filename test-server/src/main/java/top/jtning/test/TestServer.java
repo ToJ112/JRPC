@@ -3,6 +3,7 @@ package top.jtning.test;
 import top.jtning.rpc.api.HelloService;
 import top.jtning.rpc.registry.DefaultServiceRegistry;
 import top.jtning.rpc.registry.ServiceRegistry;
+import top.jtning.rpc.serializer.HessianSerializer;
 import top.jtning.rpc.socket.server.SocketServer;
 
 public class TestServer {
@@ -10,7 +11,8 @@ public class TestServer {
         HelloService helloService = new HelloServiceImpl();
         ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
         serviceRegistry.register(helloService);
-        SocketServer socketServer = new SocketServer(serviceRegistry);
-        socketServer.start(9000);
+        SocketServer server = new SocketServer(serviceRegistry);
+        server.setSerializer(new HessianSerializer());
+        server.start(9000);
     }
 }

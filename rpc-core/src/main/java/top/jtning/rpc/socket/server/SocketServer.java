@@ -2,9 +2,12 @@ package top.jtning.rpc.socket.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.jtning.rpc.enumeration.RpcError;
+import top.jtning.rpc.exception.RpcException;
 import top.jtning.rpc.registry.ServiceRegistry;
 import top.jtning.rpc.RequestHandler;
 import top.jtning.rpc.RpcServer;
+import top.jtning.rpc.serializer.CommonSerializer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,6 +25,7 @@ public class SocketServer implements RpcServer {
     private final RequestHandler requestHandler = new RequestHandler();
 
     private final ServiceRegistry serviceRegistry;
+    private CommonSerializer serializer;
 
     public SocketServer(ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
@@ -31,16 +35,25 @@ public class SocketServer implements RpcServer {
     }
 
     public void start(int port) {
+        if (serializer == null) {
+            logger.error("serializer not set");
+            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
+        }
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             logger.info("Server is starting up...");
             Socket socket;
-            while ((socket=serverSocket.accept())!=null) {
+            while ((socket = serverSocket.accept()) != null) {
                 logger.info("Consumer connection: {}:{}", socket.getInetAddress(), socket.getPort());
-                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry));
+                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry, serializer));
             }
             threadPool.shutdown();
         } catch (IOException e) {
             logger.error("An error occurred while establishing a connection: ", e);
         }
+    }
+
+    @Override
+    public void setSerializer(CommonSerializer serializer) {
+        this.serializer = serializer;
     }
 }

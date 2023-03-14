@@ -18,6 +18,7 @@
     <properties>
         <revision>2.0-SNAPSHOT</revision>
         <netty-version>4.1.89.Final</netty-version>
+        <guava.version>31.1-jre</guava.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,7 +30,6 @@
             <artifactId>netty-all</artifactId>
             <version>${netty-version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

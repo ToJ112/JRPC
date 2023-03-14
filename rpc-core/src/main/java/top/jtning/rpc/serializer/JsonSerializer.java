@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.enumeration.SerializerCode;
+import top.jtning.rpc.exception.SerializeException;
 
 import java.io.IOException;
 
@@ -18,9 +19,8 @@ public class JsonSerializer implements CommonSerializer {
         try {
             return objectMapper.writeValueAsBytes(obj);
         } catch (JsonProcessingException e) {
-            logger.error("An error occurred while serializing: {}", e.getMessage());
-            e.printStackTrace();
-            return null;
+            logger.error("An error occurred while serializing: ", e);
+            throw new SerializeException("serialize failed.");
         }
     }
 
@@ -33,9 +33,8 @@ public class JsonSerializer implements CommonSerializer {
             }
             return obj;
         } catch (IOException e) {
-            logger.error("An error occurred while deserializing:{}",e.getMessage());
-            e.printStackTrace();
-            return null;
+            logger.error("An error occurred while deserializing:",e);
+            throw new SerializeException("serialize failed.");
         }
     }
 

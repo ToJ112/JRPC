@@ -1,9 +1,10 @@
 package top.jtning.rpc.netty.server;
 
-import io.netty.channel.*;
-import io.netty.handler.codec.http.HttpUtil;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jtning.rpc.RequestHandler;
@@ -29,7 +30,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
             String interfaceName = msg.getInterfaceName();
             Object service = serviceRegistry.getService(interfaceName);
             Object result = requestHandler.handle(msg, service);
-            ChannelFuture future = ctx.writeAndFlush(RpcResponse.success(result));
+            ChannelFuture future = ctx.writeAndFlush(RpcResponse.success(result, msg.getRequestId()));
             future.addListener(ChannelFutureListener.CLOSE);
         } finally {
             ReferenceCountUtil.release(msg);

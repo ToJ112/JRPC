@@ -11,6 +11,8 @@ public enum RpcError {
     SERVICE_NOT_IMPLEMENT_ANY_INTERFACE("Service Not Implement Any Interface"),
     UNKNOWN_PROTOCOL("Unrecognized Protocol Package."),
     UNKNOWN_SERIALIZER("Unrecognized (De)serializer."),
-    UNKNOWN_PACKAGE_TYPE("Unrecognized Package Type");
+    UNKNOWN_PACKAGE_TYPE("Unrecognized Package Type"),
+    SERIALIZER_NOT_FOUND("Cannot Find Serializer"),
+    RESPONSE_NOT_MATCH("Response not match request id");
     private final String message;
 }

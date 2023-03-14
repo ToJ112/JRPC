@@ -20,7 +20,7 @@ public class JsonSerializer implements CommonSerializer {
         try {
             return objectMapper.writeValueAsBytes(obj);
         } catch (JsonProcessingException e) {
-            logger.error("An error occurred while serializing: {}", e);
+            logger.error("An error occurred while serializing: {}", e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -35,7 +35,7 @@ public class JsonSerializer implements CommonSerializer {
             }
             return obj;
         } catch (IOException e) {
-            logger.error("An error occurred while deserializing: {}", e);
+            logger.error("An error occurred while deserializing:{}",e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -44,10 +44,10 @@ public class JsonSerializer implements CommonSerializer {
     //由于使用JSON序列化和反序列化Object数组，无法保证反序列化后仍然为原实例类型 --> 重新判断处理
     private Object handleRequest(Object obj) throws IOException {
         RpcRequest rpcRequest = (RpcRequest) obj;
-        for (int i = 0; i < rpcRequest.getParameters().length; i++) {
-            Class<?> clazz = rpcRequest.getParameters()[i].getClass();
+        for (int i = 0; i < rpcRequest.getParamTypes().length; i++) {
+            Class<?> clazz = rpcRequest.getParamTypes()[i];
 //            if (!clazz.isAssignableFrom(rpcRequest.getParamTypes()[i].getClass())) {
-            if (!clazz.isAssignableFrom(rpcRequest.getParamTypes()[i].getClass())) {
+            if (!clazz.isAssignableFrom(rpcRequest.getParameters()[i].getClass())) {
                 byte[] bytes = objectMapper.writeValueAsBytes(rpcRequest.getParameters()[i]);
                 rpcRequest.getParameters()[i] = objectMapper.readValue(bytes, clazz);
             }

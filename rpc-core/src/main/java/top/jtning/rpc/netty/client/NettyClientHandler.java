@@ -18,7 +18,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
         try {
             logger.info("client receive message: {}",rpcResponse);
             AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse");
-            ctx.channel().attr(key).get();
+            ctx.channel().attr(key).set(rpcResponse);
             ctx.close();
         }finally {
             ReferenceCountUtil.release(rpcResponse);

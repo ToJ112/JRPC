@@ -10,12 +10,12 @@ import top.jtning.rpc.entity.RpcResponse;
 import top.jtning.rpc.enumeration.PackageType;
 import top.jtning.rpc.enumeration.RpcError;
 import top.jtning.rpc.exception.RpcException;
-import top.jtning.rpc.netty.serializer.CommonSerializer;
+import top.jtning.rpc.serializer.CommonSerializer;
 
 import java.util.List;
 
 public class CommonDecoder extends ReplayingDecoder {
-    private final static Logger logger = LoggerFactory.getLogger(CommonDecoder.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommonDecoder.class);
     private static final int MAGIC_NUMBER = 0xCAFEBABE;
 
     @Override

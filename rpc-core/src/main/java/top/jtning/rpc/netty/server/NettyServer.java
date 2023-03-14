@@ -7,13 +7,15 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.jtning.rpc.RpcServer;
 import top.jtning.rpc.codec.CommonDecoder;
 import top.jtning.rpc.codec.CommonEncoder;
-import top.jtning.rpc.netty.serializer.JsonSerializer;
+import top.jtning.rpc.serializer.JsonSerializer;
 
 public class NettyServer implements RpcServer {
-
+    private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
     @Override
     public void start(int port) {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -38,7 +40,7 @@ public class NettyServer implements RpcServer {
             ChannelFuture future = serverBootstrap.bind(port).sync();
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            logger.error("start server failed: ",e);
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

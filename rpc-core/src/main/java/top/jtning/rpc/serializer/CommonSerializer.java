@@ -1,4 +1,4 @@
-package top.jtning.rpc.netty.serializer;
+package top.jtning.rpc.serializer;
 
 public interface CommonSerializer {
     byte[] serialize(Object obj);

@@ -10,7 +10,7 @@ public class HelloServiceImpl implements HelloService {
 
     @Override
     public String hello(HelloObject object) {
-        logger.info("接收到：{}", object.getMessage());
-        return "调用返回值 id =" + object.getId();
+        logger.info("receive message：{}", object.getMessage());
+        return "invoke result: id =" + object.getId();
     }
 }

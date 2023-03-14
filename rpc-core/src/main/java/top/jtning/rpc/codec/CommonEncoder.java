@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.enumeration.PackageType;
-import top.jtning.rpc.netty.serializer.CommonSerializer;
+import top.jtning.rpc.serializer.CommonSerializer;
 
 public class CommonEncoder extends MessageToByteEncoder {
     private static final int MAGIC_NUMBER = 0xCAFEBABE;

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jtning.rpc.RequestHandler;
 import top.jtning.rpc.entity.RpcRequest;
+import top.jtning.rpc.entity.RpcResponse;
 import top.jtning.rpc.registry.DefaultServiceRegistry;
 import top.jtning.rpc.registry.ServiceRegistry;
 
@@ -28,7 +29,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
             String interfaceName = msg.getInterfaceName();
             Object service = serviceRegistry.getService(interfaceName);
             Object result = requestHandler.handle(msg, service);
-            ChannelFuture future = ctx.writeAndFlush(result);
+            ChannelFuture future = ctx.writeAndFlush(RpcResponse.success(result));
             future.addListener(ChannelFutureListener.CLOSE);
         } finally {
             ReferenceCountUtil.release(msg);

@@ -67,6 +67,6 @@ public class KyroSerializer implements CommonSerializer{
 
     @Override
     public int getCode() {
-        return SerializerCode.valueOf("KRYO").getCode();
+        return SerializerCode.KRYO.getCode();
     }
 }

@@ -5,7 +5,7 @@ import top.jtning.rpc.api.HelloService;
 import top.jtning.rpc.netty.server.NettyServer;
 import top.jtning.rpc.registry.DefaultServiceRegistry;
 import top.jtning.rpc.registry.ServiceRegistry;
-import top.jtning.rpc.serializer.HessianSerializer;
+import top.jtning.rpc.serializer.ProtobufSerializer;
 
 public class NettyTestServer {
     public static void main(String[] args) {
@@ -13,7 +13,7 @@ public class NettyTestServer {
         ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
         serviceRegistry.register(helloService);
         RpcServer server = new NettyServer();
-        server.setSerializer(new HessianSerializer());
+        server.setSerializer(new ProtobufSerializer());
         server.start(9999);
     }
 }

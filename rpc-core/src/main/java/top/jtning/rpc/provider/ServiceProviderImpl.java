@@ -15,18 +15,12 @@ public class ServiceProviderImpl implements ServiceProvider {
     private static final Set<String> registeredService = ConcurrentHashMap.newKeySet();
 
     @Override
-    public <T> void addServiceProvider(T service) {
-        String serviceName = service.getClass().getCanonicalName();
+    public <T> void addServiceProvider(T service, Class<T> serviceClass) {
+        String serviceName = serviceClass.getCanonicalName();
         if (registeredService.contains(serviceName)) return;
         registeredService.add(serviceName);
-        Class<?>[] interfaces = service.getClass().getInterfaces();
-        if (interfaces.length == 0) {
-            throw new RpcException(RpcError.SERVICE_NOT_IMPLEMENT_ANY_INTERFACE);
-        }
-        for (Class<?> i : interfaces) {
-            serviceMap.put(i.getCanonicalName(), service);
-        }
-        logger.info("Registering service {} to interface {}.", serviceName, interfaces);
+        serviceMap.put(serviceName, service);
+        logger.info("Registering service {} to interface {}.", serviceName);
     }
 
     @Override

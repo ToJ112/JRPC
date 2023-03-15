@@ -1,20 +1,22 @@
 package top.jtning.rpc.transport.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jtning.rpc.registry.NacosServiceRegistry;
-import top.jtning.rpc.registry.ServiceRegistry;
-import top.jtning.rpc.transport.RpcClient;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.entity.RpcResponse;
 import top.jtning.rpc.enumeration.RpcError;
 import top.jtning.rpc.exception.RpcException;
+import top.jtning.rpc.registry.NacosServiceDiscovery;
+import top.jtning.rpc.registry.ServiceDiscovery;
 import top.jtning.rpc.serializer.CommonSerializer;
+import top.jtning.rpc.transport.RpcClient;
 import top.jtning.rpc.util.RpcMessageChecker;
 
 import java.net.InetSocketAddress;
@@ -27,7 +29,7 @@ public class NettyClient implements RpcClient {
 //    private String host;
 //    private int port;
     private CommonSerializer serializer;
-    private ServiceRegistry serviceRegistry;
+    private ServiceDiscovery serviceDiscovery;
     private static final Bootstrap bootstrap;
 
 //    public NettyClient(String host, int port) {
@@ -36,7 +38,7 @@ public class NettyClient implements RpcClient {
 //    }
 
     public NettyClient() {
-        this.serviceRegistry = new NacosServiceRegistry();
+        this.serviceDiscovery = new NacosServiceDiscovery();
     }
     static {
         EventLoopGroup group = new NioEventLoopGroup();
@@ -69,7 +71,7 @@ public class NettyClient implements RpcClient {
 //            Channel channel = future.channel();
 //            if (channel != null) {
 //            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
-            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+            InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if (channel.isActive()){
             channel.writeAndFlush(rpcRequest).addListener(future1 -> {
@@ -85,8 +87,10 @@ public class NettyClient implements RpcClient {
                 RpcMessageChecker.check(rpcRequest, rpcResponse);
 //                return rpcResponse.getData();
                 result.set(rpcResponse.getData());
-            }else
+            }else{
+                channel.close();
                 System.exit(0);
+            }
         } catch (InterruptedException e) {
             logger.error("server send message fail: ", e);
         }

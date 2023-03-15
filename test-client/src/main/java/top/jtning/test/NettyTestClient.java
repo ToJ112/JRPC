@@ -9,7 +9,7 @@ import top.jtning.rpc.serializer.ProtobufSerializer;
 
 public class NettyTestClient {
     public static void main(String[] args) {
-        RpcClient client = new NettyClient("127.0.0.1", 9999);
+        RpcClient client = new NettyClient();
         client.setSerializer(new ProtobufSerializer());
         RpcClientProxy clientProxy = new RpcClientProxy(client);
         HelloService helloService = clientProxy.getProxy(HelloService.class);

@@ -7,6 +7,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.jtning.rpc.registry.NacosServiceRegistry;
+import top.jtning.rpc.registry.ServiceRegistry;
 import top.jtning.rpc.transport.RpcClient;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.entity.RpcResponse;
@@ -22,16 +24,20 @@ public class NettyClient implements RpcClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    private String host;
-    private int port;
+//    private String host;
+//    private int port;
     private CommonSerializer serializer;
+    private ServiceRegistry serviceRegistry;
     private static final Bootstrap bootstrap;
 
-    public NettyClient(String host, int port) {
-        this.host = host;
-        this.port = port;
-    }
+//    public NettyClient(String host, int port) {
+//        this.host = host;
+//        this.port = port;
+//    }
 
+    public NettyClient() {
+        this.serviceRegistry = new NacosServiceRegistry();
+    }
     static {
         EventLoopGroup group = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
@@ -62,7 +68,9 @@ public class NettyClient implements RpcClient {
 //            logger.info("client connected to server {}:{}", host, port);
 //            Channel channel = future.channel();
 //            if (channel != null) {
-            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
+//            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
+            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+            Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if (channel.isActive()){
             channel.writeAndFlush(rpcRequest).addListener(future1 -> {
                     if (future1.isSuccess()) {

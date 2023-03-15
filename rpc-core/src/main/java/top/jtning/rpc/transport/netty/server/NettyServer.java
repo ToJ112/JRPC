@@ -9,23 +9,49 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jtning.rpc.transport.RpcServer;
 import top.jtning.rpc.codec.CommonDecoder;
 import top.jtning.rpc.codec.CommonEncoder;
 import top.jtning.rpc.enumeration.RpcError;
 import top.jtning.rpc.exception.RpcException;
+import top.jtning.rpc.provider.ServiceProvider;
+import top.jtning.rpc.provider.ServiceProviderImpl;
+import top.jtning.rpc.registry.NacosServiceRegistry;
 import top.jtning.rpc.serializer.CommonSerializer;
+import top.jtning.rpc.transport.RpcServer;
+
+import java.net.InetSocketAddress;
 
 public class NettyServer implements RpcServer {
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
+    private final String host;
+
+    private final int port;
+    private ServiceProvider serviceProvider;
+    private final NacosServiceRegistry serviceRegistry;
+
     private CommonSerializer serializer;
 
+    public NettyServer(String host, int port) {
+        this.host = host;
+        this.port = port;
+        this.serviceProvider = new ServiceProviderImpl();
+        this.serviceRegistry = new NacosServiceRegistry();
+    }
+
     @Override
-    public void start(int port) {
+    public <T> void publishService(Object service, Class<T> serviceClass) {
         if (serializer == null) {
             logger.error("serializer not set");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
+        serviceProvider.addServiceProvider(service);
+        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+        start();
+    }
+
+    @Override
+    public void start() {
+
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -45,10 +71,10 @@ public class NettyServer implements RpcServer {
                             pipeline.addLast(new NettyServerHandler());
                         }
                     });
-            ChannelFuture future = serverBootstrap.bind(port).sync();
+            ChannelFuture future = serverBootstrap.bind(host, port).sync();
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            logger.error("start server failed: ",e);
+            logger.error("start server failed: ", e);
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
@@ -59,4 +85,6 @@ public class NettyServer implements RpcServer {
     public void setSerializer(CommonSerializer serializer) {
         this.serializer = serializer;
     }
+
+
 }

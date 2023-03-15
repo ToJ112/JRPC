@@ -1,19 +1,17 @@
 package top.jtning.test;
 
-import top.jtning.rpc.transport.RpcServer;
 import top.jtning.rpc.api.HelloService;
-import top.jtning.rpc.transport.netty.server.NettyServer;
-import top.jtning.rpc.provider.ServiceProviderImpl;
-import top.jtning.rpc.provider.ServiceProvider;
 import top.jtning.rpc.serializer.ProtobufSerializer;
+import top.jtning.rpc.transport.RpcServer;
+import top.jtning.rpc.transport.netty.server.NettyServer;
 
 public class NettyTestServer {
     public static void main(String[] args) {
         HelloService helloService = new HelloServiceImpl();
-        ServiceProvider serviceProvider = new ServiceProviderImpl();
-        serviceProvider.addServiceProvider(helloService);
-        RpcServer server = new NettyServer();
+//        ServiceProvider serviceProvider = new ServiceProviderImpl();
+//        serviceProvider.addServiceProvider(helloService);
+        RpcServer server = new NettyServer("127.0.0.1", 9999);
         server.setSerializer(new ProtobufSerializer());
-        server.start(9999);
+        server.publishService(helloService, HelloService.class);
     }
 }

@@ -22,7 +22,7 @@ public class NacosServiceRegistry implements ServiceRegistry {
 
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {
         try {
-            NacosUtil.registerService(namingService, serviceName, inetSocketAddress);
+            NacosUtil.registerService(serviceName, inetSocketAddress);
         } catch (NacosException e) {
             logger.error("Failed to register service: ", e);
             throw new RpcException(RpcError.REGISTER_SERVICE_FAILED);

@@ -2,36 +2,41 @@ package top.jtning.rpc.transport.socket.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jtning.rpc.registry.NacosServiceRegistry;
-import top.jtning.rpc.registry.ServiceRegistry;
-import top.jtning.rpc.transport.RpcClient;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.entity.RpcResponse;
 import top.jtning.rpc.enumeration.ResponseCode;
 import top.jtning.rpc.enumeration.RpcError;
 import top.jtning.rpc.exception.RpcException;
+import top.jtning.rpc.loadbalancer.LoadBalancer;
+import top.jtning.rpc.loadbalancer.RandomLoadBalancer;
+import top.jtning.rpc.registry.NacosServiceDiscovery;
+import top.jtning.rpc.registry.ServiceDiscovery;
 import top.jtning.rpc.serializer.CommonSerializer;
+import top.jtning.rpc.transport.RpcClient;
 import top.jtning.rpc.transport.socket.util.ObjectReader;
 import top.jtning.rpc.transport.socket.util.ObjectWriter;
 import top.jtning.rpc.util.RpcMessageChecker;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class SocketClient implements RpcClient {
     private static final Logger logger = LoggerFactory.getLogger(SocketClient.class);
-    //    private final String host;
-//    private final int port;
-    private final ServiceRegistry serviceRegistry;
-    private CommonSerializer serializer;
+    private final ServiceDiscovery serviceDiscovery;
+    private final CommonSerializer serializer;
 
-//    public SocketClient(String host, int port) {
-//        this.host = host;
-//        this.port = port;
-//    }
     public SocketClient() {
-        this.serviceRegistry = new NacosServiceRegistry();
+        this(DEFAULT_SERIALIZER,new RandomLoadBalancer());
+    }
+    public SocketClient(Integer serializer) {
+        this(serializer,new RandomLoadBalancer());
+    }
+    public SocketClient(Integer serializer, LoadBalancer loadBalancer) {
+        this.serializer = CommonSerializer.getByCode(serializer);
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
     }
 
     public Object sendRequest(RpcRequest rpcRequest) {
@@ -39,7 +44,7 @@ public class SocketClient implements RpcClient {
             logger.error("未设置序列化器");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
-        InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
         try (Socket socket = new Socket()) {
             socket.connect(inetSocketAddress);
             OutputStream outputStream = socket.getOutputStream();
@@ -56,16 +61,10 @@ public class SocketClient implements RpcClient {
                 throw new RpcException(RpcError.SERVICE_INVOCATION_FAILURE, " service: " + rpcRequest.getInterfaceName());
             }
             RpcMessageChecker.check(rpcRequest,rpcResponse);
-            return rpcResponse.getData();
+            return rpcResponse;
         } catch (IOException e) {
             logger.error("调用时有错误发生：", e);
             throw new RpcException(RpcError.SERVICE_INVOCATION_FAILURE);
         }
     }
-
-    @Override
-    public void setSerializer(CommonSerializer serializer) {
-        this.serializer = serializer;
-    }
-
 }

@@ -2,104 +2,89 @@ package top.jtning.rpc.transport.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jtning.rpc.entity.RpcRequest;
 import top.jtning.rpc.entity.RpcResponse;
 import top.jtning.rpc.enumeration.RpcError;
 import top.jtning.rpc.exception.RpcException;
+import top.jtning.rpc.factory.SingletonFactory;
+import top.jtning.rpc.loadbalancer.LoadBalancer;
+import top.jtning.rpc.loadbalancer.RandomLoadBalancer;
 import top.jtning.rpc.registry.NacosServiceDiscovery;
 import top.jtning.rpc.registry.ServiceDiscovery;
 import top.jtning.rpc.serializer.CommonSerializer;
 import top.jtning.rpc.transport.RpcClient;
-import top.jtning.rpc.util.RpcMessageChecker;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
 
 public class NettyClient implements RpcClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
-
-//    private String host;
-//    private int port;
-    private CommonSerializer serializer;
-    private ServiceDiscovery serviceDiscovery;
     private static final Bootstrap bootstrap;
+    private static final EventLoopGroup group;
 
-//    public NettyClient(String host, int port) {
-//        this.host = host;
-//        this.port = port;
-//    }
-
-    public NettyClient() {
-        this.serviceDiscovery = new NacosServiceDiscovery();
-    }
     static {
-        EventLoopGroup group = new NioEventLoopGroup();
+        group = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
         bootstrap.group(group)
-                .channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true);
+                .channel(NioSocketChannel.class);
     }
 
+    private final CommonSerializer serializer;
+    private final ServiceDiscovery serviceDiscovery;
+    private final UnprocessedRequests unprocessedRequests;
+
+    public NettyClient() {
+        this(DEFAULT_SERIALIZER,new RandomLoadBalancer());
+    }
+
+    public NettyClient(Integer serializer) {
+        this(serializer, new RandomLoadBalancer());
+    }
+
+    public NettyClient(Integer serializer, LoadBalancer loadBalancer) {
+        this.serializer = CommonSerializer.getByCode(serializer);
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
+        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+    }
+
+
     @Override
-    public Object sendRequest(RpcRequest rpcRequest) {
+    public CompletableFuture<RpcResponse> sendRequest(RpcRequest rpcRequest) {
         if (serializer == null) {
             logger.error("serializer not set");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
-//        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-//
-//            @Override
-//            protected void initChannel(SocketChannel ch) throws Exception {
-//                ChannelPipeline pipeline = ch.pipeline();
-//                pipeline.addLast(new CommonDecoder())
-//                        .addLast(new CommonEncoder(serializer))
-//                        .addLast(new NettyClientHandler());
-//            }
-//        });
-        AtomicReference<Object> result = new AtomicReference<>(null);
+        CompletableFuture<RpcResponse> resultFuture = new CompletableFuture<>();
         try {
-//            ChannelFuture future = bootstrap.connect(host, port).sync();
-//            logger.info("client connected to server {}:{}", host, port);
-//            Channel channel = future.channel();
-//            if (channel != null) {
-//            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
             InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
-            if (channel.isActive()){
-            channel.writeAndFlush(rpcRequest).addListener(future1 -> {
-                    if (future1.isSuccess()) {
-                        logger.info("server send message: {}", rpcRequest.toString());
-                    } else {
-                        logger.error("server send message fail in channel: ", future1.cause());
-                    }
-                });
-                channel.closeFuture().sync();
-                AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse" + rpcRequest.getRequestId());
-                RpcResponse rpcResponse = channel.attr(key).get();
-                RpcMessageChecker.check(rpcRequest, rpcResponse);
-//                return rpcResponse.getData();
-                result.set(rpcResponse.getData());
-            }else{
-                channel.close();
-                System.exit(0);
+            if (!channel.isActive()) {
+                group.shutdownGracefully();
+                return null;
             }
+            unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);
+            channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener) future1 -> {
+                if (future1.isSuccess()) {
+                    logger.info("server send message: {}", rpcRequest);
+                } else {
+                    future1.channel().close();
+                    resultFuture.completeExceptionally(future1.cause());
+                    logger.error("server send message fail in channel: ", future1.cause());
+                }
+            });
         } catch (InterruptedException e) {
-            logger.error("server send message fail: ", e);
+            unprocessedRequests.remove(rpcRequest.getRequestId());
+            logger.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
-        return result.get();
-    }
-
-    @Override
-    public void setSerializer(CommonSerializer serializer) {
-        this.serializer = serializer;
+        return resultFuture;
     }
 }
 

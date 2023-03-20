@@ -5,71 +5,74 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jtning.rpc.codec.CommonDecoder;
 import top.jtning.rpc.codec.CommonEncoder;
-import top.jtning.rpc.enumeration.RpcError;
-import top.jtning.rpc.exception.RpcException;
 import top.jtning.rpc.serializer.CommonSerializer;
 
 import java.net.InetSocketAddress;
-import java.util.Date;
-import java.util.concurrent.CountDownLatch;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class ChannelProvider {
     private static final Logger logger = LoggerFactory.getLogger(ChannelProvider.class);
-    private static final int MAX_RETRY_COUNT = 5;
     private static EventLoopGroup eventLoopGroup;
     private static Bootstrap bootstrap = initializeBootstrap();
-    private static Channel channel = null;
+    //    private static final int MAX_RETRY_COUNT = 5;
+//    private static Channel channel = null;
+    private static Map<String, Channel> channels = new ConcurrentHashMap<>();
 
-    public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer) {
+    public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer) throws InterruptedException {
+        String key = inetSocketAddress.toString() + serializer.getCode();
+        if (channels.containsKey(key)) {
+            Channel channel = channels.get(key);
+            if (channel != null && channel.isActive()) {
+                return channel;
+            } else {
+                channels.remove(key);
+            }
+        }
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             // RpcResponse -> ByteBuf
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast(new CommonEncoder(serializer)).addLast(new CommonDecoder()).addLast(new NettyClientHandler());
+                pipeline.addLast(new CommonEncoder(serializer))
+                        //0：readerIdleTime，表示当连接空闲时间超过这个阈值时，触发读空闲事件（即通知下一个处理器连接读取超时）。
+                        //5：writerIdleTime，表示当连接空闲时间超过这个阈值时，触发写空闲事件（即通知下一个处理器连接写入超时）。
+                        //0：allIdleTime，表示当连接空闲时间超过这个阈值时，触发读或写空闲事件（即通知下一个处理器连接读写超时）
+                        .addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS))
+                        .addLast(new CommonDecoder())
+                        .addLast(new NettyClientHandler());
             }
         });
-        //启动xx个子线程
-        CountDownLatch countDownLatch = new CountDownLatch(1);
+        Channel channel = null;
         try {
-            connect(bootstrap, inetSocketAddress, countDownLatch);
+            channel = connect(bootstrap, inetSocketAddress);
             //主线程等待所有子线程执行完毕
-            countDownLatch.await();
-
-        } catch (InterruptedException e) {
-            logger.error("An error occurred while getting the channel:", e);
+        } catch (ExecutionException e) {
+            logger.error("An error occurred while connecting to the client: ", e);
+            return null;
         }
         return channel;
     }
 
-    private static void connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress, CountDownLatch countDownLatch) {
-        connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT, countDownLatch);
-    }
-
-    private static void connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress, int retry, CountDownLatch countDownLatch) {
+    private static Channel connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress) throws ExecutionException, InterruptedException {
+        CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 logger.info("Successfully connected to server.");
-                channel = future.channel();
-                //标记已经完成一个任务
-                countDownLatch.countDown();
-                return;
+                completableFuture.complete(future.channel());
+            } else {
+                throw new IllegalStateException();
             }
-            if (retry == 0) {
-                logger.error("The maximum number of retries has been reached, cannot connected to server.");
-                countDownLatch.countDown();
-                throw new RpcException(RpcError.CLIENT_CONNECT_SERVER_FAILURE);
-            }
-            int order = MAX_RETRY_COUNT - retry + 1;
-            int delay = 1 << order;
-            logger.error("{}: Connection failed, reconnecting for the {}th time...", new Date(), order);
-            bootstrap.config().group().schedule(() -> connect(bootstrap, inetSocketAddress, retry - 1, countDownLatch), delay, TimeUnit.SECONDS);
         });
+        return completableFuture.get();
     }
 
     private static Bootstrap initializeBootstrap() {

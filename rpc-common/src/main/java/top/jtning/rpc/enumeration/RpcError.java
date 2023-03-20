@@ -6,6 +6,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum RpcError {
+    UNKNOWN_ERROR("unknown error"),
+    SERVICE_SCAN_PACKAGE_NOT_FOUNDED("The ServiceScan of the startup class annotation is missing"),
     CLIENT_CONNECT_SERVER_FAILURE("Cannot connect to server"),
     SERVICE_INVOCATION_FAILURE("Service Invocation Failed"),
     SERVICE_NOT_FOUND("Service Not Found"),

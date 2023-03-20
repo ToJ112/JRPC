@@ -18,24 +18,19 @@ public class RequestHandler {
         serviceProvider = new ServiceProviderImpl();
     }
     public Object handle(RpcRequest rpcRequest) {
-        Object result = null;
         Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
-        try {
-            result = invokeTargetMethod(rpcRequest, service);
-            logger.info("Service: {} Successfully invoked method: {}", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            logger.error("An error occurred while calling or sending:" + e);
-        }
-        return result;
+        return invokeTargetMethod(rpcRequest,service);
     }
 
-    private Object invokeTargetMethod(RpcRequest rpcRequest, Object service) throws InvocationTargetException, IllegalAccessException {
-        Method method;
+    private Object invokeTargetMethod(RpcRequest rpcRequest, Object service)  {
+        Object result;
         try {
-            method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
-        } catch (NoSuchMethodException e) {
+            Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
+            result = method.invoke(service, rpcRequest.getParameters());
+            logger.info("Service:{} invoke method: {} success", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             return RpcResponse.fail(ResponseCode.METHOD_NOT_FOUND, rpcRequest.getRequestId());
         }
-        return method.invoke(service, rpcRequest.getParameters());
+        return result;
     }
 }

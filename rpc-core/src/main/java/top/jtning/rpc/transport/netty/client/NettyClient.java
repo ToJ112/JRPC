@@ -36,6 +36,7 @@ public class NettyClient implements RpcClient {
                 .channel(NioSocketChannel.class);
     }
 
+
     private final CommonSerializer serializer;
     private final ServiceDiscovery serviceDiscovery;
     private final UnprocessedRequests unprocessedRequests;

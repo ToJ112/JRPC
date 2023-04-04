@@ -23,8 +23,6 @@ public class ChannelProvider {
     private static final Logger logger = LoggerFactory.getLogger(ChannelProvider.class);
     private static EventLoopGroup eventLoopGroup;
     private static Bootstrap bootstrap = initializeBootstrap();
-    //    private static final int MAX_RETRY_COUNT = 5;
-//    private static Channel channel = null;
     private static Map<String, Channel> channels = new ConcurrentHashMap<>();
 
     public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer) throws InterruptedException {
